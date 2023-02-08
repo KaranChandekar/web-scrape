@@ -14,8 +14,7 @@ while url:
 
         soup = BeautifulSoup(htmlContent, 'html.parser')
         lists = soup.find_all('article', class_='___SBoxSizing_8om4t_gg_ Iwvz1NUd')
-
-                    
+                  
         for list in lists:
             companyName = list.find('span', class_='___SText_is0jf_gg_ _size_400_is0jf_gg_ __fontWeight_is0jf_gg_')
             if companyName:
