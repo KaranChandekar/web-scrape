@@ -2,47 +2,48 @@ import requests
 from bs4 import BeautifulSoup
 from csv import writer
 
-url = "https://digitalagencynetwork.com/agencies/usa/seo/"
-request = requests.get(url)
-htmlContent = request.content
-print(htmlContent)
+url = "https://www.semrush.com/agencies/list/seo/"
 
+while url:
+    # Make the request to the URL
+    response = requests.get(url)
 
-soup = BeautifulSoup(htmlContent, 'html.parser')
-lists = soup.find_all('li', class_='columns small-12 medium-6')
-print(lists)
+    # Check if the request was successful
+    if response.status_code == 200:
+        htmlContent = response.content
 
-# with open('companyData.csv', 'w', encoding='utf-8') as f:
-#     thewriter = writer(f)
-#     header = ['Company Name', 'Address', 'Rating', 'Recent Review', 'About', 'Website Link', 'Business Detail', 'Industries']
-#     thewriter.writerow(header)
-    
-for list in lists:
-    companyName = list.find('a', class_='h4 thb-post-title')
-    if companyName:
-        companyName = companyName.text.replace('\n', '')
+        soup = BeautifulSoup(htmlContent, 'html.parser')
+        lists = soup.find_all('article', class_='___SBoxSizing_8om4t_gg_ Iwvz1NUd')
+
+                    
+        for list in lists:
+            companyName = list.find('span', class_='___SText_is0jf_gg_ _size_400_is0jf_gg_ __fontWeight_is0jf_gg_')
+            if companyName:
+                companyName = companyName.text.replace('\n', '')
+            else:
+                companyName = ''
+
+            logo = list.find('img', class_='_2ioAjkxV')
+            if logo:
+                logo = logo['src']
+            else:
+                logo = ''
+
+            about = list.find('p', class_='l3GSkPAx ___SText_is0jf_gg_ _size_200_is0jf_gg_')
+            if about:
+                about = about.text.replace('\n', '')
+            else:
+                about = ''
+
+            info = [companyName, about, logo]
+            print(info)
+
+    # Find the link to the next page
+    next_page_link = soup.find("a", class_="___SNextPage_1sarh_gg_")
+    if next_page_link:
+        url = 'https://www.semrush.com' + next_page_link.get("href")
     else:
-        companyName = ''
-
-    logo = list.find('div', class_='entity-header-wrapper')
-    if logo:
-        logo = logo.find('a', class_='company-logo').find('img')['src']
-    else:
-        logo = ''
-
-    about = list.find('div', class_='s1y5ibwe')
-    if about:
-        about = about.text.replace('\n', '')
-    else:
-        about = ''
-
-    website = list.find('a', class_='h4 thb-post-title')
-    if website:
-        website = website.get('href')
-    else:
-        website = ''
-
-    info = [companyName, about, website, logo]
-    # print(info)
-        # thewriter.writerow(info)
-
+        url = None
+else:
+    print("Failed to retrieve page content")
+    url = None        
